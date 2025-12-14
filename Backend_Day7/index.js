@@ -12,6 +12,9 @@ const information = [
   { id: 6, name: "guddu", distic: "muzapharpur" },
 ];
 
+app.get("/info",(req,res)=>{
+    res.send(information);
+})
 app.get("/info/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const info = information.find((i) => i.id === id);
