@@ -29,7 +29,7 @@ app.post("/info", (req, res) => {
 // app.use("/detail", (req, res) => {
 //   res.send({ name: "dipu", age: 22, education: "graduation", percentage: 95 });
 // });
-
+ 
 // app.use("/about", (req, res) => {
 //   res.send("i am a about page");
 // });
