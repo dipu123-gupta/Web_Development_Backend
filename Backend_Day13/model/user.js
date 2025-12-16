@@ -1,61 +1,39 @@
 const mongoose = require("mongoose");
-// import { type } from "./../../MongoDB_Day8/node_modules/path-to-regexp/dist/index.d";
+// import { function } from './../../MongooseBcrypt_Day11/node_modules/mongodb/src/utils';
+
 const { Schema } = mongoose;
 
-const userSchema = new Schema(
-  {
-    // name: String,
-    // age: Number,
-    // city: String,
-    // gender: String,
-    // emailId: String,
-    // mobaileNumber: Number,
-    firstName: {
-      type: String,
-      required: true,
-      minLength: 3,
-      maxLength: 20,
-    },
-    lastName: {
-      type: String,
-      // unique: true,
-    },
-    age: {
-      type: Number,
-      min: 14,
-      max: 70,
-    },
-    gender: {
-      type: String,
-      // enum:["male","female","other"]
-
-      validate(value) {
-        if (!["male", "female", "other"].includes(value)) {
-          throw new Error("invalide gender");
-        }
-      },
-    },
-    emailId: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      immutable: true,
-    },
-    password: {
-      type: String,
-    },
-    city: {
-      type: String,
-    },
-    photo: {
-      type: String,
-    },
+const UserSchema = new Schema({
+  firstName: {
+    type: String,
+    required: [true, "First name is required"],
+    minlength: [3, "string ka lenght 3 se kam nhi hona chahiye"],
+    maxlength: [20, "string ka length 20 se zyada nhi hona chahiye"],
   },
-  { timestamps: true }
-);
+  lastName: {
+    type: String,
+  },
+  age: {
+    type: Number,
+    min: 12,
+    max: 100,
+  },
+  gender: {
+    type: String,
+    enum: ["male", "female", "other"],
+  },
+  emailId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    // minlength: 8,
+    // maxlength: 20,
+  },
+});
 
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model("user", UserSchema);
 
 module.exports = User;
