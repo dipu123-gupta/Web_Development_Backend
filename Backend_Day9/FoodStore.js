@@ -1,125 +1,96 @@
-const express = require('express');
+// FoodStore.js
 
-const Auth = require("./auth")
+const express = require("express");
+const Auth = require("./auth");
 
 const app = express();
 app.use(express.json());
 
+// ---------------- FOOD DATA ----------------
 const foodMenu = [
     { id: 1, foodName: "Paneer Butter Masala", price: 220, category: "Veg" },
     { id: 2, foodName: "Chicken Curry", price: 250, category: "non-veg" },
-    { id: 3, foodName: "Dal Tadka", price: 160, category: "Veg" },
-    { id: 4, foodName: "Veg Biryani", price: 180, category: "Veg" },
-    { id: 5, foodName: "Chicken Biryani", price: 260, category: "non-veg" },
-    { id: 6, foodName: "Jeera Rice", price: 120, category: "Veg" },
-    { id: 7, foodName: "Butter Naan", price: 40, category: "Veg" },
-    { id: 8, foodName: "Garlic Naan", price: 50, category: "Veg" },
-    { id: 9, foodName: "Tandoori Roti", price: 30, category: "Veg" },
-    { id: 10, foodName: "Veg Momos", price: 90, category: "Snacks" },
-    { id: 11, foodName: "Chicken Momos", price: 120, category: "non-veg" },
-    { id: 12, foodName: "Samosa", price: 20, category: "Snacks" },
-    { id: 13, foodName: "French Fries", price: 100, category: "Snacks" },
-    { id: 14, foodName: "Cold Drink", price: 50, category: "Beverages" },
-    { id: 15, foodName: "Lassi", price: 70, category: "Beverages" },
-    { id: 16, foodName: "Tea", price: 20, category: "Beverages" },
-    { id: 17, foodName: "Coffee", price: 30, category: "Beverages" },
-    { id: 18, foodName: "Gulab Jamun", price: 60, category: "Dessert" },
-    { id: 19, foodName: "Ice Cream", price: 80, category: "Dessert" },
-    { id: 20, foodName: "Rasgulla", price: 70, category: "Dessert" }
+    { id: 3, foodName: "Dal Tadka", price: 160, category: "Veg" }
 ];
 
-const AddCart = [];
+const addCart = [];
 
-//! food manu ko koi bhi access kar sakta hai
+// ---------------- PUBLIC ROUTE ----------------
 app.get("/food", (req, res) => {
-    try {
-        res.send(foodMenu);
-    } catch (error) {
-        res.status(500).send(error.message);
+    res.status(200).json(foodMenu);
+});
+
+// ---------------- ADMIN ROUTES ----------------
+
+// Add item (admin only)
+app.post("/admin/add", Auth, (req, res) => {
+    foodMenu.push(req.body);
+    res.send("Item added successfully");
+});
+
+// Delete item (admin only)
+app.delete("/admin/delete/:id", Auth, (req, res) => {
+    const id = Number(req.params.id);
+    const index = foodMenu.findIndex(item => item.id === id);
+
+    if (index === -1) {
+        return res.send("Item not found");
     }
-})
 
-// ! item ko only admin hi add kar sakata hai  
-app.post("/admin", Auth, (req, res) => {
-    try {
-        foodMenu.push(req.body);
-        res.send("Item Add successfully");
-    } catch (error) {
-        res.status(500).send(error.message);
+    foodMenu.splice(index, 1);
+    res.send("Item deleted successfully");
+});
+
+// Update item (admin only)
+app.patch("/admin/update/:id", Auth, (req, res) => {
+    const id = Number(req.params.id);
+    const item = foodMenu.find(item => item.id === id);
+
+    if (!item) {
+        return res.send("Item not found");
     }
-})
 
-// ! only admin hi delete kar sakata hai item ko
-app.delete('/delete/:id', Auth, (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const index = foodMenu.findIndex(item => item.id === id);
+    if (req.body.foodName) item.foodName = req.body.foodName;
+    if (req.body.price) item.price = req.body.price;
+    if (req.body.category) item.category = req.body.category;
 
-        if (index === -1) {
-            res.send("item dose not present");
-        } else {
-            foodMenu.splice(index, 1);
-            res.send("Item deleted successfully");
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
+    res.send("Item updated successfully");
+});
+
+// ---------------- USER CART ----------------
+
+// Add to cart
+app.post("/user/add/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const item = foodMenu.find(item => item.id === id);
+
+    if (!item) {
+        return res.send("Item not available");
     }
-})
 
-// ! only admin item ko edite kar sakta hai
-app.patch("/admin/:id", Auth, (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const foodData = foodMenu.find(item => item.id === id);
+    addCart.push(item);
+    res.send("Item added to cart");
+});
 
-        if (foodData) {
-            if (req.body.foodName) foodData.foodName = req.body.foodName;
-            if (req.body.price) foodData.price = req.body.price;
-            if (req.body.category) foodData.category = req.body.category;
+// Remove from cart
+app.delete("/user/remove/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const index = addCart.findIndex(item => item.id === id);
 
-            res.send("Item Updated");
-        } else {
-            res.send("item not exist");
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
+    if (index === -1) {
+        return res.send("Item not in cart");
     }
-})
 
-// ! user Cart me add kar sakta hai
-app.post('/user/:id', (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const foodItem = foodMenu.find(item => item.id === id);
+    addCart.splice(index, 1);
+    res.send("Item removed from cart");
+});
 
-        if (foodItem) {
-            AddCart.push(foodItem);
-            res.send("Item added successfully");
-        } else {
-            res.send("Item out of stock");
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-})
+// View cart
+app.get("/addtocart", (req, res) => {
+    res.json(addCart);
+});
 
-//! user cart se remove kar sakata hai
-app.delete("/user/:id", (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const index = AddCart.findIndex(item => item.id === id);
-
-        if (index != -1) {
-            AddCart.splice(index, 1);
-            res.send("Item removed successfully");
-        } else {
-            res.send("Item not Present in cart");
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-})
-
+// ---------------- SERVER ----------------
 app.listen(3000, () => {
-    console.log("Server running on port number: 3000");
+    console.log("Server running on port 3000");
 });

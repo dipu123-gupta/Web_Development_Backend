@@ -1,13 +1,12 @@
-const Auth=(req,res,next)=>{
-    //Add item into food manu
-    // Authentication karna padega ki kya ye admin hi hai nahi
-    // dummy code 
+const Auth = (req, res, next) => {
     const token = "ABCDEF";
-    const Access = token === "ABCDEF" ? 1 : 0;
-    if (!Access) {
-        res.send("No permission")
-    }
-    next();
-}
+    const access = token === "ABCDEF";
 
-module.exports=Auth;
+    if (!access) {
+        return res.status(403).send("No permission");
+    }
+
+    next();
+};
+
+module.exports = Auth;
